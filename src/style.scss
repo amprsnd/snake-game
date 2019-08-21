@@ -30,3 +30,15 @@ html, body {
 
   background: #ccc;
 }
+
+.field .row .cell.snake {
+  background: #000;
+  border-radius: 2px;
+  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.85);
+}
+
+.field .row .cell.scorepoint {
+  background: #ff0000;
+  border-radius: 42px;
+  box-shadow: 0 0 5px 0 rgba(255, 0, 0, 0.85);
+}

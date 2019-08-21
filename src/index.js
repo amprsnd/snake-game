@@ -3,14 +3,14 @@ import Snake from './_snake'
 
 (() => {
   const snake = new Snake({
-    el: '#ororo',
+    el: '#app',
     width: 50,
     height: 50,
     initialSpeed: 5,
-    initilLength: 9
+    initilLength: 3
   })
 
-  snake.start()
+  // snake.start()
 
   console.log(snake)
 })()
