@@ -10,6 +10,8 @@ export default class Snake {
     this._fillSnake(this.options.width, this.options.height, this.options.initilLength)
     this._drawSnake()
     this._drawScorepoint()
+    this._drawScoresPanel()
+    this._drawStartScreen()
     this._addEvents()
   }
 
@@ -31,12 +33,9 @@ export default class Snake {
   _scores = 0
   _gameOver = false
 
-  get scores () {
-    return this._scores
-  }
-
   start () {
     this._tick = setInterval(this._move, 500 / this.options.speed)
+    document.querySelector('.start-screen').style.display = 'none'
   }
 
   pause () {
@@ -46,6 +45,33 @@ export default class Snake {
   _speedUp () {
     this.pause()
     this.start()
+  }
+
+  _drawScoresPanel () {
+    const panel = document.createElement('DIV')
+    panel.classList.add('panel')
+    panel.innerHTML = 'Scores: <span>0</span>'
+    this._container.appendChild(panel)
+  }
+
+  _drawStartScreen () {
+    const startScreen = document.createElement('DIV')
+    startScreen.classList.add('start-screen')
+    startScreen.innerHTML = `
+      <h3>Snake v0.1</h3>
+      <p>demo app</p>
+      <span>click or press 'space' to start</span>
+    `
+    this._container.appendChild(startScreen)
+  }
+  _drawFinishScreen () {
+    const finishScreen = document.createElement('DIV')
+    finishScreen.classList.add('finish-screen')
+    finishScreen.innerHTML = `
+      <h3>Game Over!</h3>
+      <p>Your result: <b>${this._scores}<b></p>
+    `
+    this._container.appendChild(finishScreen)
   }
 
   _fillField (w, h) {
@@ -58,18 +84,18 @@ export default class Snake {
     }
 
     // fill array columns
-    this._field.forEach((row) => {
+    this._field.forEach(row => {
       for (let i = 0; i < w; i++) {
         row.push(0)
       }
     })
 
     // draw HTML
-    this._field.forEach((row) => {
+    this._field.forEach(row => {
       let rowNode = document.createElement('DIV')
       rowNode.classList.add('row')
 
-      row.forEach((cell) => {
+      row.forEach(() => {
         let cellNode = document.createElement('DIV')
         cellNode.classList.add('cell')
         rowNode.appendChild(cellNode)
@@ -101,7 +127,7 @@ export default class Snake {
   }
 
   _drawSnake () {
-    this._snake.forEach((position) => {
+    this._snake.forEach(position => {
       this._drawCell('snake', position, 1)
     })
   }
@@ -112,24 +138,23 @@ export default class Snake {
 
     let scorepointPosition = this._field[this._scorePoint.y][this._scorePoint.x]
 
-    if (scorepointPosition !== 0) {
+    if (scorepointPosition === 0) {
+      this._drawCell('scorepoint', this._scorePoint, 2)
+    } else {
       this._drawScorepoint()
-      return
     }
-    this._drawCell('scorepoint', this._scorePoint, 2)
   }
 
   _drawCell (className, coordinates, value) {
     this._field[coordinates.y][coordinates.x] = value
-
-    let row = this._container.querySelectorAll('.row')[coordinates.y]
-    let cell = row.querySelectorAll('.cell')[coordinates.x]
+    const row = this._container.querySelectorAll('.row')[coordinates.y]
+    const cell = row.querySelectorAll('.cell')[coordinates.x]
     cell.classList.add(className)
   }
 
   _move = () => {
+    const snakeHead = this._snake[0]
     let snakeStep
-    let snakeHead = this._snake[0]
 
     // direct snake
     if (this._direction === 'left') {
@@ -155,14 +180,16 @@ export default class Snake {
     ) {
       clearInterval(this._tick)
       this._gameOver = true
+      this._drawFinishScreen()
     }
 
     // add scorepoint
     if (this._field[snakeStep.y][snakeStep.x] === 2) {
       this._snake.push({ x: snakeStep.x, y: snakeStep.y })
       this._field[snakeStep.y][snakeStep.x] = 0
-      this._scores ++
       this.options.speed++
+      this._scores++
+      document.querySelector('.panel span').innerText = this._scores
       this._drawScorepoint()
       this._speedUp()
     }
@@ -175,7 +202,7 @@ export default class Snake {
   }
 
   _addEvents () {
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', e => {
       // direct snake
       if ((e.keyCode === 37 || e.keyCode === 100) && this._direction !== 'right') this._snakeDirect('left')
       if ((e.keyCode === 38 || e.keyCode === 104) && this._direction !== 'bottom') this._snakeDirect('top')
@@ -186,6 +213,9 @@ export default class Snake {
       if (e.keyCode === 32) this.start()
       // pause
       if (e.keyCode === 27) this.pause()
+    })
+    document.querySelector('.start-screen').addEventListener('click', () => {
+      this.start()
     })
   }
 
