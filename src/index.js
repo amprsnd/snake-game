@@ -6,11 +6,7 @@ import Snake from './_snake'
     el: '#app',
     width: 50,
     height: 50,
-    initialSpeed: 5,
+    speed: 1,
     initilLength: 3
   })
-
-  // snake.start()
-
-  console.log(snake)
 })()

@@ -3,7 +3,7 @@ export default class Snake {
     this.options.el = params.el || this.options.el
     this.options.width = params.width || this.options.width
     this.options.height = params.height || this.options.height
-    this.options.initialSpeed = params.initialSpeed || this.options.initialSpeed
+    this.options.speed = params.speed || this.options.speed
     this.options.initilLength = params.initilLength || this.options.initilLength
 
     this._fillField(this.options.width, this.options.height, this._container)
@@ -15,9 +15,9 @@ export default class Snake {
 
   options = {
     el: '#app',
-    width: 10,
-    height: 10,
-    initialSpeed: 1,
+    width: 50,
+    height: 50,
+    speed: 1,
     initilLength: 3
   }
 
@@ -27,26 +27,25 @@ export default class Snake {
   _direction = 'right'
   _container = document.querySelector(this.options.el)
 
-  _scores = 0
-
   _tick = null
+  _scores = 0
+  _gameOver = false
 
   get scores () {
     return this._scores
   }
 
   start () {
-    this._tick = setInterval(this._move, 1200 / this.options.initialSpeed)
-    console.log('start')
+    this._tick = setInterval(this._move, 500 / this.options.speed)
   }
 
   pause () {
     clearInterval(this._tick)
-    console.log('pause')
   }
 
-  restart () {
-    console.log('restart')
+  _speedUp () {
+    this.pause()
+    this.start()
   }
 
   _fillField (w, h) {
@@ -82,9 +81,9 @@ export default class Snake {
 
   _drawField () {
     this._field.forEach(row => {
-      row.forEach(cell => {
-        cell = 0
-      })
+      for (let i = 0; i < row.length; i++) {
+        row[i] = 0
+      }
     })
     document.querySelectorAll('.cell').forEach(cell => {
       cell.className = ''
@@ -103,15 +102,6 @@ export default class Snake {
 
   _drawSnake () {
     this._snake.forEach((position) => {
-
-      // TODO: DRY refactor
-      // this._field[position.y][position.x] = 1
-
-      // let row = this._container.querySelectorAll('.row')[position.y]
-      // let cell = row.querySelectorAll('.cell')[position.x]
-      // cell.classList.add('snake')
-      // console.log(row, cell)
-
       this._drawCell('snake', position, 1)
     })
   }
@@ -126,17 +116,7 @@ export default class Snake {
       this._drawScorepoint()
       return
     }
-
-    // TODO: DRY refactor
-    // this._field[this._scorePoint.y][this._scorePoint.x] = 2
-
-    // let row = this._container.querySelectorAll('.row')[this._scorePoint.y]
-    // let cell = row.querySelectorAll('.cell')[this._scorePoint.x]
-    // cell.classList.add('scorepoint')
-    // console.log(row, cell)
-
     this._drawCell('scorepoint', this._scorePoint, 2)
-
   }
 
   _drawCell (className, coordinates, value) {
@@ -145,59 +125,62 @@ export default class Snake {
     let row = this._container.querySelectorAll('.row')[coordinates.y]
     let cell = row.querySelectorAll('.cell')[coordinates.x]
     cell.classList.add(className)
-    console.log(row, cell)
   }
 
   _move = () => {
-    console.log(this._snake)
+    let snakeStep
     let snakeHead = this._snake[0]
-
-    // add scorepoint
-    if (this._field[snakeHead.y][snakeHead.x] === 2) {
-      this._snake.unshift({ x: snakeHead.x, y: snakeHead.y })
-      this._drawScorepoint()
-      return
-    }
 
     // direct snake
     if (this._direction === 'left') {
-      this._snake.unshift({ x: snakeHead.x - 1, y: snakeHead.y})
-      this._snake.pop()
+      snakeStep = { x: snakeHead.x - 1, y: snakeHead.y}
     }
     if (this._direction === 'top') {
-      this._snake.unshift({ x: snakeHead.x, y: snakeHead.y - 1 })
-      this._snake.pop()
+      snakeStep = { x: snakeHead.x, y: snakeHead.y - 1 }
     }
     if (this._direction === 'right') {
-      this._snake.unshift({ x: snakeHead.x + 1, y: snakeHead.y })
-      this._snake.pop()
+      snakeStep = { x: snakeHead.x + 1, y: snakeHead.y }
     }
     if (this._direction === 'bottom') {
-      this._snake.unshift({ x: snakeHead.x, y: snakeHead.y + 1 })
-      this._snake.pop()
+      snakeStep = { x: snakeHead.x, y: snakeHead.y + 1 }
     }
+    this._snake.unshift(snakeStep)
+    this._snake.pop()
 
     // check barriers
     if (
-      snakeHead.x < 0 || snakeHead.x > this.options.width ||
-      snakeHead.y < 0 || snakeHead.y > this.options.height ||
-      this._field[snakeHead.y][snakeHead.x] === 1
+      snakeStep.x < 0 || snakeStep.x > this.options.width ||
+      snakeStep.y < 0 || snakeStep.y > this.options.height ||
+      this._field[snakeStep.y][snakeStep.x] === 1
     ) {
-      // alert('Game over')
+      clearInterval(this._tick)
+      this._gameOver = true
     }
 
-    this._drawField()
-    this._drawCell('scorepoint', this._scorePoint, 2)
-    this._drawSnake()
+    // add scorepoint
+    if (this._field[snakeStep.y][snakeStep.x] === 2) {
+      this._snake.push({ x: snakeStep.x, y: snakeStep.y })
+      this._field[snakeStep.y][snakeStep.x] = 0
+      this._scores ++
+      this.options.speed++
+      this._drawScorepoint()
+      this._speedUp()
+    }
+
+    if (!this._gameOver) {
+      this._drawField()
+      this._drawCell('scorepoint', this._scorePoint, 2)
+      this._drawSnake()
+    }
   }
 
   _addEvents () {
     document.addEventListener('keydown', (e) => {
       // direct snake
-      if (e.keyCode === 37 || e.keyCode === 100 && this.direction !== 'right') this._snakeDirect('left')
-      if (e.keyCode === 38 || e.keyCode === 104 && this.direction !== 'bottom') this._snakeDirect('top')
-      if (e.keyCode === 39 || e.keyCode === 102 && this.direction !== 'left') this._snakeDirect('right')
-      if (e.keyCode === 40 || e.keyCode === 98  && this.direction !== 'top') this._snakeDirect('bottom')
+      if ((e.keyCode === 37 || e.keyCode === 100) && this._direction !== 'right') this._snakeDirect('left')
+      if ((e.keyCode === 38 || e.keyCode === 104) && this._direction !== 'bottom') this._snakeDirect('top')
+      if ((e.keyCode === 39 || e.keyCode === 102) && this._direction !== 'left') this._snakeDirect('right')
+      if ((e.keyCode === 40 || e.keyCode === 98)  && this._direction !== 'top') this._snakeDirect('bottom')
 
       // start
       if (e.keyCode === 32) this.start()
@@ -208,7 +191,6 @@ export default class Snake {
 
   _snakeDirect(direction) {
     this._direction = direction
-    console.log(this._direction)
   }
 
   _random (min, max) {
