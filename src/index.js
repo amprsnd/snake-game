@@ -1,16 +1,16 @@
-import snake from './_snake'
+import './style.scss'
+import Snake from './_snake'
 
 (() => {
-  console.log('ready')
-
-  snake.init({
-    el: '#app',
-    width: 10,
-    height: 10,
-    initialSpeed: 1,
-    initilLength: 3
+  const snake = new Snake({
+    el: '#ororo',
+    width: 50,
+    height: 50,
+    initialSpeed: 5,
+    initilLength: 9
   })
 
-  console.log()
+  snake.start()
 
+  console.log(snake)
 })()

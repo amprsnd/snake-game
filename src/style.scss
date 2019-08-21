@@ -4,3 +4,29 @@ html, body {
   margin: 0;
   padding: 0;
 }
+.container {
+  padding: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+  border: 1px solid #ccc;
+}
+
+.field .row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  padding: 1px 0 0 1px;
+}
+
+.field .row .cell {
+  display: block;
+  width: 8px;
+  height: 8px;
+  margin: 0 1px 1px 0;
+
+  background: #ccc;
+}
